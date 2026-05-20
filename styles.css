@@ -1996,3 +1996,61 @@ a.btn-signup {
 .form-actions {
     justify-content: flex-end;
 }
+
+/* ===== BOUTON GOOGLE SYNC ===== */
+.btn-google-sync {
+    display: inline-flex;
+    align-items: center;
+    gap: 7px;
+    padding: 9px 16px;
+    background: white;
+    color: #4285f4;
+    border: 1.5px solid #c5d4f7;
+    border-radius: 10px;
+    cursor: pointer;
+    font-weight: 600;
+    font-size: 13px;
+    transition: all 0.22s ease;
+    white-space: nowrap;
+}
+.btn-google-sync svg { stroke: #4285f4; flex-shrink: 0; }
+.btn-google-sync:hover {
+    background: #f0f4ff;
+    border-color: #4285f4;
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(66,133,244,0.18);
+}
+.btn-google-sync.connected {
+    background: #f0faf4;
+    color: #0f9d58;
+    border-color: #a8d5b5;
+}
+.btn-google-sync.connected svg { stroke: #0f9d58; }
+.btn-google-sync.connected:hover {
+    background: #e6f7ee;
+    border-color: #0f9d58;
+    box-shadow: 0 4px 12px rgba(15,157,88,0.18);
+}
+.btn-google-sync.syncing {
+    opacity: 0.7;
+    cursor: wait;
+    animation: pulse 1s ease-in-out infinite;
+}
+@keyframes pulse {
+    0%, 100% { opacity: 0.7; }
+    50% { opacity: 1; }
+}
+
+/* Indicateur tâche synchronisée */
+.task-synced-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 3px;
+    font-size: 10px;
+    color: #0f9d58;
+    font-weight: 600;
+    background: #f0faf4;
+    padding: 2px 6px;
+    border-radius: 6px;
+    border: 1px solid #a8d5b5;
+}
