@@ -441,6 +441,7 @@ function displayTasks(filterDate = null) {
                     <span class="task-date ${isOverdue ? 'overdue' : ''}">
                         ${isOverdue ? '⚠️ ' : '📅 '}${taskDate.toLocaleDateString('fr-FR', { weekday: 'short', day: 'numeric', month: 'short' })}
                     </span>
+                    ${task.syncedToGoogle ? '<span class="task-synced-badge">🗓️ Google</span>' : ''}
                 </div>
             </div>
             <button class="task-delete" onclick="deleteTask('${task.id}')" title="Supprimer">🗑️</button>
@@ -505,6 +506,7 @@ function toggleTask(taskId) {
     const task = tasks.find(t => t.id === taskId);
     if (task) {
         task.completed = !task.completed;
+        task.syncedToGoogle = false; // besoin de re-sync
         saveToStorage();
         displayTasks();
         generateCalendar();
@@ -524,71 +526,152 @@ function deleteTask(taskId) {
     }
 }
 
-// ===== EXPORT GOOGLE AGENDA (.ics) =====
-function exportToICS() {
+// ===== GOOGLE CALENDAR SYNC =====
+const GOOGLE_CLIENT_ID = '215154720471-54tqldn0hfp2oikllbuoe322n81lh8g4.apps.googleusercontent.com';
+const GOOGLE_SCOPE = 'https://www.googleapis.com/auth/calendar.events';
+const GOOGLE_DISCOVERY = 'https://www.googleapis.com/discovery/v1/apis/calendar/v3/rest';
+
+let googleAccessToken = null;
+let googleTokenClient = null;
+let gapiReady = false;
+let gsiReady = false;
+
+// Initialiser GAPI (client REST)
+function initGapi() {
+    gapi.load('client', async () => {
+        await gapi.client.init({});
+        await gapi.client.load(GOOGLE_DISCOVERY);
+        gapiReady = true;
+    });
+}
+
+// Initialiser GSI (token OAuth)
+function initGsi() {
+    googleTokenClient = google.accounts.oauth2.initTokenClient({
+        client_id: GOOGLE_CLIENT_ID,
+        scope: GOOGLE_SCOPE,
+        callback: async (response) => {
+            if (response.error) {
+                showNotification('Connexion Google annulée', 'error');
+                return;
+            }
+            googleAccessToken = response.access_token;
+            gapi.client.setToken({ access_token: googleAccessToken });
+            updateGoogleBtn(true);
+            showNotification('Connecté à Google Agenda !', 'success');
+            await syncTasksToGoogle();
+        },
+    });
+    gsiReady = true;
+}
+
+// Appelé quand les scripts Google sont chargés
+window.addEventListener('load', () => {
+    // Attendre que les libs soient dispo
+    const waitGapi = setInterval(() => {
+        if (typeof gapi !== 'undefined') {
+            clearInterval(waitGapi);
+            initGapi();
+        }
+    }, 200);
+    const waitGsi = setInterval(() => {
+        if (typeof google !== 'undefined' && google.accounts) {
+            clearInterval(waitGsi);
+            initGsi();
+        }
+    }, 200);
+});
+
+function handleGoogleSync() {
     if (!currentUser) return;
-
     const userTasks = tasks.filter(t => t.userId === currentUser.id);
-
     if (userTasks.length === 0) {
-        showNotification('Aucune tâche à exporter', 'error');
+        showNotification('Aucune tâche à synchroniser', 'error');
+        return;
+    }
+    if (!gsiReady || !gapiReady) {
+        showNotification('Chargement Google en cours, réessaie dans 2 secondes…', 'info');
+        return;
+    }
+    // Demander le token (ouvre la popup Google)
+    googleTokenClient.requestAccessToken({ prompt: googleAccessToken ? '' : 'consent' });
+}
+
+async function syncTasksToGoogle() {
+    if (!currentUser || !googleAccessToken) return;
+
+    const userTasks = tasks.filter(t => t.userId === currentUser.id && !t.syncedToGoogle);
+    if (userTasks.length === 0) {
+        showNotification('Toutes les tâches sont déjà synchronisées ✓', 'info');
         return;
     }
 
-    const lines = [
-        'BEGIN:VCALENDAR',
-        'VERSION:2.0',
-        'PRODID:-//EduTask//FR',
-        'CALSCALE:GREGORIAN',
-        'METHOD:PUBLISH',
-        'X-WR-CALNAME:EduTask - Mes Révisions',
-        'X-WR-TIMEZONE:Europe/Paris',
-    ];
+    updateGoogleBtn(true, true); // loading
+    let synced = 0;
+    let errors = 0;
 
-    userTasks.forEach(task => {
-        const uid = `edutask-${task.id}@edutask`;
-        // Date format YYYYMMDD
-        const dateStr = task.date.replace(/-/g, '');
-        const now = new Date().toISOString().replace(/[-:]/g, '').split('.')[0] + 'Z';
-        const status = task.completed ? 'COMPLETED' : 'NEEDS-ACTION';
+    for (const task of userTasks) {
+        try {
+            const dateStr = task.date; // YYYY-MM-DD
+            const event = {
+                summary: task.title,
+                description: task.description || '',
+                start: { date: dateStr },
+                end: { date: dateStr },
+                colorId: task.completed ? '2' : '9', // vert si terminé, bleu sinon
+                extendedProperties: {
+                    private: { edutaskId: task.id }
+                }
+            };
 
-        lines.push('BEGIN:VEVENT');
-        lines.push(`UID:${uid}`);
-        lines.push(`DTSTAMP:${now}`);
-        lines.push(`DTSTART;VALUE=DATE:${dateStr}`);
-        lines.push(`DTEND;VALUE=DATE:${dateStr}`);
-        lines.push(`SUMMARY:${escapeICS(task.title)}`);
-        if (task.description) {
-            lines.push(`DESCRIPTION:${escapeICS(task.description)}`);
+            await gapi.client.calendar.events.insert({
+                calendarId: 'primary',
+                resource: event,
+            });
+
+            // Marquer comme synchronisé
+            task.syncedToGoogle = true;
+            synced++;
+        } catch (e) {
+            console.error('Erreur sync tâche:', task.title, e);
+            errors++;
         }
-        lines.push(`STATUS:${status}`);
-        lines.push('CATEGORIES:EDUTASK,REVISION');
-        lines.push('END:VEVENT');
-    });
+    }
 
-    lines.push('END:VCALENDAR');
+    saveToStorage();
+    updateGoogleBtn(true, false);
 
-    const icsContent = lines.join('\r\n');
-    const blob = new Blob([icsContent], { type: 'text/calendar;charset=utf-8' });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = 'edutask-agenda.ics';
-    document.body.appendChild(a);
-    a.click();
-    document.body.removeChild(a);
-    URL.revokeObjectURL(url);
-
-    showNotification(`${userTasks.length} tâche(s) exportée(s) ! Importe le fichier dans Google Agenda.`, 'success');
+    if (errors === 0) {
+        showNotification(`${synced} tâche(s) ajoutée(s) dans Google Agenda ! 🗓️`, 'success');
+    } else {
+        showNotification(`${synced} synchronisée(s), ${errors} erreur(s)`, 'info');
+    }
 }
 
-function escapeICS(str) {
-    return (str || '')
-        .replace(/\\/g, '\\\\')
-        .replace(/;/g, '\\;')
-        .replace(/,/g, '\\,')
-        .replace(/\n/g, '\\n');
+function updateGoogleBtn(connected, loading = false) {
+    const btn = document.getElementById('btnGoogleSync');
+    const label = document.getElementById('googleSyncLabel');
+    if (!btn || !label) return;
+
+    if (loading) {
+        btn.classList.add('syncing');
+        label.textContent = 'Synchronisation…';
+    } else if (connected) {
+        btn.classList.add('connected');
+        btn.classList.remove('syncing');
+        label.textContent = 'Synchroniser';
+    } else {
+        btn.classList.remove('connected', 'syncing');
+        label.textContent = 'Connecter Google';
+    }
 }
+
+// Reset sync status quand une tâche est modifiée
+function markTaskUnsynced(taskId) {
+    const task = tasks.find(t => t.id === taskId);
+    if (task) task.syncedToGoogle = false;
+}
+
 
 // ===== EVENT LISTENERS =====
 function setupEventListeners() {
