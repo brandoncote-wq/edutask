@@ -1,0 +1,215 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>EduTask - Agenda Collaboratif</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <!-- Navigation -->
+    <nav class="navbar" id="navbar">
+        <div class="navbar-container">
+            <div class="navbar-brand">
+                <h2>🎓 EduTask</h2>
+            </div>
+            <div class="navbar-menu">
+                <a href="#landing-page">Accueil</a>
+                <a href="#features">Fonctionnalités</a>
+                <a href="#how-it-works">Comment ça marche</a>
+                <a href="#contact">Contact</a>
+            </div>
+            <div class="navbar-buttons">
+                <a href="login.html" class="btn-login">Connexion</a>
+                <a href="register.html" class="btn-signup">S'inscrire</a>
+            </div>
+            <div class="hamburger" onclick="toggleMenu()">
+                <span></span>
+                <span></span>
+                <span></span>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Landing Page -->
+    <div id="landing-page" class="page active">
+        <!-- Hero Section -->
+        <section class="hero">
+            <div class="hero-content">
+                <div class="hero-left">
+                    <h1 class="hero-title">
+                        Commencez Vos
+                        <span class="gradient-text"> Révisions</span>
+                    </h1>
+                    <p class="hero-subtitle">
+                        Réviser n'est pas une corvée, tu as une chance de réviser avec ce site il te faut seulement 5 min pour créer ton compte et commencer à faire un groupe avec tes camarades.
+                    </p>
+                    <div class="hero-buttons">
+                        <a href="register.html" class="btn-primary-hero">Commencer</a>
+                        <button class="btn-secondary-hero">Regarder la démo</button>
+                    </div>
+                    <div class="hero-stats">
+                        <div class="stat">
+                            <strong>5+</strong>
+                            <span>Fonctionnalités</span>
+                        </div>
+                        <div class="stat">
+                            <strong>100%</strong>
+                            <span>Gratuit</span>
+                        </div>
+                        <div class="stat">
+                            <strong>∞</strong>
+                            <span>Utilisateurs</span>
+                        </div>
+                    </div>
+                </div>
+                <div class="hero-right">
+                    <div class="ipad-frame">
+                        <div class="ipad-screen">
+                            <div class="calendar-preview">
+                                <div class="cal-header">Décembre 2024</div>
+                                <div class="cal-grid">
+                                    <div class="cal-day">L</div>
+                                    <div class="cal-day">M</div>
+                                    <div class="cal-day">M</div>
+                                    <div class="cal-day">J</div>
+                                    <div class="cal-day">V</div>
+                                    <div class="cal-day">S</div>
+                                    <div class="cal-day">D</div>
+                                    <div class="cal-date active">1</div>
+                                    <div class="cal-date">2</div>
+                                    <div class="cal-date">3</div>
+                                    <div class="cal-date">4</div>
+                                    <div class="cal-date">5</div>
+                                    <div class="cal-date">6</div>
+                                    <div class="cal-date">7</div>
+                                </div>
+                                <div class="tasks-preview">
+                                    <div class="task-item">📝 Maths</div>
+                                    <div class="task-item">🔬 Physique</div>
+                                    <div class="task-item">📚 Histoire</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="floating-elements">
+                        <div class="float-element element-1">✏️</div>
+                        <div class="float-element element-2">📚</div>
+                        <div class="float-element element-3">🎯</div>
+                        <div class="float-element element-4">💡</div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Features Section -->
+        <section id="features" class="features">
+            <div class="section-header">
+                <h2>Pourquoi EduTask?</h2>
+                <p>Tout ce dont tu as besoin pour réussir</p>
+            </div>
+            <div class="features-grid">
+                <div class="feature-card">
+                    <div class="feature-icon">📅</div>
+                    <h3>Calendrier Interactif</h3>
+                    <p>Visualisez toutes vos tâches sur un calendrier intuitive et facile d'utilisation</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon">👥</div>
+                    <h3>Travail en Groupe</h3>
+                    <p>Créez des groupes avec vos amis et collaborez ensemble sur les tâches</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon">✅</div>
+                    <h3>Gestion de Tâches</h3>
+                    <p>Organisez vos révisions avec des priorités et des statuts de completion</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon">🔐</div>
+                    <h3>Sécurisé</h3>
+                    <p>Vos données sont protégées avec une authentification sécurisée</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon">⚡</div>
+                    <h3>Rapide</h3>
+                    <p>Interface ultra-rapide pour une meilleure productivité</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon">📱</div>
+                    <h3>Responsive</h3>
+                    <p>Utilisable sur tous les appareils: desktop, tablette, mobile</p>
+                </div>
+            </div>
+        </section>
+
+        <!-- How It Works -->
+        <section id="how-it-works" class="how-it-works">
+            <div class="section-header">
+                <h2>Comment ça Marche?</h2>
+                <p>Trois étapes simples pour commencer</p>
+            </div>
+            <div class="steps-container">
+                <div class="step">
+                    <div class="step-number">1</div>
+                    <h3>S'inscrire</h3>
+                    <p>Créez un compte en 2 minutes avec votre email</p>
+                </div>
+                <div class="step-arrow">→</div>
+                <div class="step">
+                    <div class="step-number">2</div>
+                    <h3>Créer un Groupe</h3>
+                    <p>Invitez vos amis et formez un groupe de révision</p>
+                </div>
+                <div class="step-arrow">→</div>
+                <div class="step">
+                    <div class="step-number">3</div>
+                    <h3>Réviser</h3>
+                    <p>Commencez à créer et gérer vos tâches</p>
+                </div>
+            </div>
+        </section>
+
+        <!-- CTA Section -->
+        <section class="cta">
+            <div class="cta-content">
+                <h2>Prêt à Commencer?</h2>
+                <p>Rejoignez les étudiants qui réussissent avec EduTask</p>
+                <button class="btn-cta-large" onclick="window.location.href='register.html'">Commencer Gratuitement</button>
+            </div>
+        </section>
+
+        <!-- Footer -->
+        <footer class="footer">
+            <div class="footer-content">
+                <div class="footer-section">
+                    <h4>EduTask</h4>
+                    <p>Votre plateforme d'apprentissage collaboratif</p>
+                </div>
+                <div class="footer-section">
+                    <h4>Liens</h4>
+                    <ul>
+                        <li><a href="#features">Fonctionnalités</a></li>
+                        <li><a href="#how-it-works">Comment ça marche</a></li>
+                    </ul>
+                </div>
+                <div class="footer-section">
+                    <h4>Légal</h4>
+                    <ul>
+                        <li><a href="#">Confidentialité</a></li>
+                        <li><a href="#">Conditions</a></li>
+                    </ul>
+                </div>
+                <div class="footer-section">
+                    <h4 id="contact">Contact</h4>
+                    <p>support@edutask.com</p>
+                </div>
+            </div>
+            <div class="footer-bottom">
+                <p>&copy; 2024 EduTask. Tous droits réservés.</p>
+            </div>
+        </footer>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>
